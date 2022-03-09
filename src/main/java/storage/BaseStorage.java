@@ -7,12 +7,13 @@ import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-abstract public class BaseStorage extends KeyedProcessFunction<Short, GraphOp, GraphOp> implements CheckpointedFunction {
+abstract public class BaseStorage extends ProcessFunction<GraphOp, GraphOp> implements CheckpointedFunction {
     public transient short currentKey = -1;
     public short parallelism = 1;
     public short position = 1;
@@ -43,6 +44,7 @@ abstract public class BaseStorage extends KeyedProcessFunction<Short, GraphOp, G
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
         this.parallelism = (short) getRuntimeContext().getNumberOfParallelSubtasks();
+        this.currentKey = (short) getRuntimeContext().getIndexOfThisSubtask();
         BaseStorage.tensorManager = NDManager.newBaseManager();
         this.plugins.values().forEach(item->{item.setStorage(this);item.open();});
     }

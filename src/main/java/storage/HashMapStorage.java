@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+
+
 public abstract class HashMapStorage extends BaseStorage{
     public transient MapState<String, Integer> translationTable;
     public transient MapState<Integer, String> reverseTranslationTable;

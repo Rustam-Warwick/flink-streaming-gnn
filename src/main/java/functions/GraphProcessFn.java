@@ -9,12 +9,14 @@ import iterations.Rpc;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Gauge;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 import storage.HashMapStorage;
+import storage.ListStorage;
 
 import java.util.Objects;
 
-public class GraphProcessFn extends HashMapStorage {
+public class GraphProcessFn extends ListStorage {
     public transient Collector<GraphOp> out;
 
     @Override
@@ -23,8 +25,7 @@ public class GraphProcessFn extends HashMapStorage {
     }
 
     @Override
-    public void processElement(GraphOp value, KeyedProcessFunction<Short, GraphOp, GraphOp>.Context ctx, Collector<GraphOp> out) throws Exception {
-        this.currentKey = (short)(ctx.getCurrentKey() / 1000);
+    public void processElement(GraphOp value, ProcessFunction<GraphOp, GraphOp>.Context ctx, Collector<GraphOp> out) throws Exception {
         this.out = out;
         try{
             switch (value.op){

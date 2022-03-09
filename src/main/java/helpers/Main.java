@@ -94,7 +94,7 @@ public class Main {
                 model.setBlock(myBlock);
                 return model;
             }
-        }), false);
+        }), true);
         gs.gnnLayer((GraphProcessFn) new GraphProcessFn().withPlugin(new GNNLayerInference() {
             @Override
             public Model createMessageModel() {
@@ -128,7 +128,7 @@ public class Main {
                 model.setBlock(myBlock);
                 return model;
             }
-        }), false);
+        }), true);
         gs.gnnLayer((GraphProcessFn) new GraphProcessFn().withPlugin(new GNNOutputInference() {
             @Override
             public Model createOutputModel() {
@@ -144,7 +144,7 @@ public class Main {
                 model.setBlock(myBlock);
                 return model;
             }
-        }), false);
+        }), true);
         System.out.println(gs.env.getExecutionPlan());
         gs.env.execute("HDRFPartitionerJOB");
     }
