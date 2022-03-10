@@ -20,6 +20,7 @@ import partitioner.BasePartitioner;
 import partitioner.PartKeySelector;
 import partitioner.PartPartitioner;
 import serializers.TensorSerializer;
+import state.hashmap.MyStateBackend;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -42,6 +43,7 @@ public class GraphStream {
         this.env.getConfig().enableObjectReuse();
         this.env.setParallelism(this.parallelism);
         this.env.registerTypeWithKryoSerializer(MxNDArray.class, TensorSerializer.class);
+        this.env.setStateBackend(new MyStateBackend());
     }
 
     public DataStream<GraphOp> readSocket(MapFunction<String, GraphOp> parser, String host, int port) {
@@ -91,7 +93,7 @@ public class GraphStream {
         storageProcess.layers = this.layers;
         storageProcess.position = this.position_index;
         DataStream<GraphOp> iterator = this.last.iterate();
-        DataStream<GraphOp> res = iterator.process(storageProcess).name("Gnn Process").setParallelism((int) Math.pow(this.layer_parallelism, Math.min(this.position_index, this.layers)));
+        DataStream<GraphOp> res = iterator.process(storageProcess).name("Gnn Process").setParallelism((int) Math.pow(this.layer_parallelism, Math.min(this.position_index, this.layers))).partitionCustom(new PartPartitioner(), new PartKeySelector());
         DataStream<GraphOp> iterateFilter = res.filter(item -> item.state == IterationState.ITERATE).setParallelism(iterator.getParallelism());
         DataStream<GraphOp> forwardFilter = res.filter(item -> item.state == IterationState.FORWARD).setParallelism((int) Math.pow(this.layer_parallelism, Math.min(this.position_index + 1,this.layers)));
         if (Objects.nonNull(this.iterator)) {
