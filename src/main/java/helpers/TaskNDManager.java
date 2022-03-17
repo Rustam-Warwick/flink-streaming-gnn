@@ -25,13 +25,12 @@ public class TaskNDManager {
         return taskLifeCycleManager;
     }
 
-    public  void clean(){
+    public void clean(){
         taskSingleProcessManager.close();
         taskSingleProcessManager = taskLifeCycleManager.newSubManager();
     }
 
     public  void close(){
-        taskSingleProcessManager.close();
         taskLifeCycleManager.close();
     }
 

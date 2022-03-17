@@ -4,8 +4,10 @@ import ai.djl.ndarray.NDArray;
 import elements.GraphElement;
 import helpers.NDTensor;
 import iterations.RemoteFunction;
+import iterations.Rpc;
 import scala.Tuple3;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class SumAggregator extends BaseAggregator<Tuple3<NDTensor, Integer, HashMap<Integer, Integer>>> {
@@ -72,15 +74,19 @@ public class SumAggregator extends BaseAggregator<Tuple3<NDTensor, Integer, Hash
 
     @Override
     public void bulkReduce(NDArray... newElements) {
-
+        if(newElements.length == 0) return;
+        NDArray copyFirst = newElements[0].toDevice(newElements[0].getDevice(), true);
+        newElements[0] = copyFirst;
+        NDArray sum = Arrays.stream(newElements).reduce(NDArray::addi).get();
+        Rpc.call(this, "reduce", new NDTensor(sum), newElements.length);
     }
 
     @RemoteFunction
     @Override
     public void replace(NDTensor newElement, NDTensor oldElement) {
-//        newElement.subi(oldElement);
-//        this.value._1().addi(newElement);
-//        this.value = new Tuple3<>(this.value._1(), this.value._2(), this.value._3());
+        NDArray difference = newElement.get(this.storage.manager.getTempManager()).sub(oldElement.get(this.storage.manager.getTempManager()));
+        NDArray res = this.value._1().get(this.storage.manager.getTempManager()).add(difference);
+        this.value = new Tuple3<>(new NDTensor(res), this.value._2(), this.value._3());
     }
 
 

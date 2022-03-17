@@ -10,6 +10,7 @@ import elements.ElementType;
 import elements.GraphOp;
 import elements.Op;
 import features.Tensor;
+import helpers.TaskNDManager;
 import iterations.IterationState;
 import iterations.Rpc;
 import org.apache.flink.api.common.functions.RichJoinFunction;
@@ -22,7 +23,7 @@ import scala.Tuple2;
  */
 public class GraphLossFn extends RichJoinFunction<GraphOp, GraphOp, GraphOp> {
     public Loss loss = null;
-
+    public TaskNDManager manager;
     public Loss lossFunction(){
         return new SoftmaxCrossEntropyLoss();
     }
@@ -31,6 +32,7 @@ public class GraphLossFn extends RichJoinFunction<GraphOp, GraphOp, GraphOp> {
     public void open(Configuration parameters) throws Exception {
         super.open(parameters);
         this.loss = lossFunction();
+        this.manager = new TaskNDManager();
     }
 
     @Override
